@@ -1,0 +1,125 @@
+# =============================================================================
+# main-api-helm/templates/_helpers.tpl
+# =============================================================================
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "main-api.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "main-api.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "main-api.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common labels
+*/}}
+{{- define "main-api.labels" -}}
+helm.sh/chart: {{ include "main-api.chart" . }}
+{{ include "main-api.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: {{ .Values.global.projectName }}
+app.kubernetes.io/component: api
+environment: {{ .Values.global.environment }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "main-api.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "main-api.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "main-api.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "main-api.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create image repository URL
+*/}}
+{{- define "main-api.imageRepository" -}}
+{{- printf "%s.dkr.ecr.%s.amazonaws.com/%s/main-api" .Values.global.accountId .Values.global.region .Values.global.projectName }}
+{{- end }}
+
+{{/*
+Create image tag
+*/}}
+{{- define "main-api.imageTag" -}}
+{{- default .Chart.AppVersion .Values.app.image.tag }}
+{{- end }}
+
+{{/*
+Create full image name
+*/}}
+{{- define "main-api.image" -}}
+{{- printf "%s:%s" (include "main-api.imageRepository" .) (include "main-api.imageTag" .) }}
+{{- end }}
+
+{{/*
+Create AWS IAM role ARN
+*/}}
+{{- define "main-api.iamRoleArn" -}}
+{{- printf "arn:aws:iam::%s:role/%s-%s-main-api-role" .Values.global.accountId .Values.global.projectName .Values.global.environment }}
+{{- end }}
+
+{{/*
+Create auxiliary service URL
+*/}}
+{{- define "main-api.auxiliaryServiceUrl" -}}
+{{- printf "http://auxiliary-service.auxiliary-service.svc.cluster.local:3001" }}
+{{- end }}
+
+{{/*
+Create monitoring namespace
+*/}}
+{{- define "main-api.monitoringNamespace" -}}
+{{- default "monitoring" .Values.monitoring.namespace }}
+{{- end }}
+
+{{/*
+Validate required values
+*/}}
+{{- define "main-api.validateValues" -}}
+{{- if not .Values.global.accountId }}
+{{- fail "global.accountId is required" }}
+{{- end }}
+{{- if not .Values.global.region }}
+{{- fail "global.region is required" }}
+{{- end }}
+{{- if not .Values.global.projectName }}
+{{- fail "global.projectName is required" }}
+{{- end }}
+{{- end }}

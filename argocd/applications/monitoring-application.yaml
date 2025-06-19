@@ -1,0 +1,84 @@
+# # argocd/applications/monitoring-application.yaml
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: monitoring
+#   namespace: argocd
+#   finalizers:
+#     - resources-finalizer.argocd.argoproj.io
+# spec:
+#   project: default
+#   source:
+#     repoURL: https://prometheus-community.github.io/helm-charts
+#     chart: kube-prometheus-stack
+#     targetRevision: "58.0.0"  # Updated to newer version
+#     helm:
+#       values: |
+#         prometheus:
+#           prometheusSpec:
+#             retention: 30d
+#             storageSpec:
+#               volumeClaimTemplate:
+#                 spec:
+#                   storageClassName: gp2  # Changed from gp3 for better compatibility
+#                   accessModes: ["ReadWriteOnce"]
+#                   resources:
+#                     requests:
+#                       storage: 20Gi  # Reduced for local testing
+#             additionalScrapeConfigs:
+#             - job_name: 'main-api'
+#               kubernetes_sd_configs:
+#               - role: endpoints
+#                 namespaces:
+#                   names:
+#                   - main-api
+#               relabel_configs:
+#               - source_labels: [__meta_kubernetes_service_name]
+#                 action: keep
+#                 regex: main-api.*
+#               - source_labels: [__meta_kubernetes_endpoint_port_name]
+#                 action: keep
+#                 regex: http.*
+#             - job_name: 'auxiliary-service'
+#               kubernetes_sd_configs:
+#               - role: endpoints
+#                 namespaces:
+#                   names:
+#                   - auxiliary-service
+#               relabel_configs:
+#               - source_labels: [__meta_kubernetes_service_name]
+#                 action: keep
+#                 regex: auxiliary-service.*
+#               - source_labels: [__meta_kubernetes_endpoint_port_name]
+#                 action: keep
+#                 regex: http.*
+#         grafana:
+#           adminPassword: "admin123"  # Change this in production!
+#           persistence:
+#             enabled: true
+#             storageClassName: gp2
+#             size: 5Gi  # Reduced for local testing
+#           serviceMonitor:
+#             enabled: true
+#         alertmanager:
+#           alertmanagerSpec:
+#             storage:
+#               volumeClaimTemplate:
+#                 spec:
+#                   storageClassName: gp2
+#                   accessModes: ["ReadWriteOnce"]
+#                   resources:
+#                     requests:
+#                       storage: 5Gi  # Reduced for local testing
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: monitoring
+#   syncPolicy:
+#     automated:
+#       prune: false  # Changed to false for monitoring stack safety
+#       selfHeal: true
+#     syncOptions:
+#     - CreateNamespace=true
+#     - ServerSideApply=true
+#     - Replace=true
+#   revisionHistoryLimit: 5

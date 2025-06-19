@@ -1,0 +1,17 @@
+# =============================================================================
+# main-api-helm/templates/pdb.yaml
+# =============================================================================
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.app.name }}-pdb
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.app.name }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+{{- end }}

@@ -1,0 +1,48 @@
+# argocd/applications/auxiliary-service-application.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: auxiliary-service
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/microservices-k8s  # UPDATE THIS
+    targetRevision: HEAD
+    path: ../helm/auxiliary-service
+    helm:
+      valueFiles:
+      - values.yaml
+      - values-staging.yaml  # Environment-specific values
+      parameters:
+      - name: image.tag
+        value: "latest"  # This will be updated by CI/CD
+      - name: app.serviceVersion
+        value: "v1.0.0"  # This will be updated by CI/CD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: auxiliary-service
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+    - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas
+  revisionHistoryLimit: 10

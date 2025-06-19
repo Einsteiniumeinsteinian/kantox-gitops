@@ -1,0 +1,13 @@
+# =============================================================================
+# main-api-helm/templates/resourcequota.yaml
+# =============================================================================
+{{- if .Values.resourceQuota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ .Values.app.name }}-quota
+  namespace: {{ .Values.namespace.name }}
+spec:
+  hard:
+    {{- toYaml .Values.resourceQuota.hard | nindent 4 }}
+{{- end }}

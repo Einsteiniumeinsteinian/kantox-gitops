@@ -1,0 +1,14 @@
+# =============================================================================
+# main-api-helm/templates/configmap.yaml
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.app.name }}-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.app.name }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ tpl $value $ | quote }}
+  {{- end }}

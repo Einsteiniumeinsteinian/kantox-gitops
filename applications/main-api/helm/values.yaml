@@ -1,0 +1,169 @@
+# =============================================================================
+# main-api-helm/values.yaml (Default values)
+# =============================================================================
+# Global settings
+global:
+  projectName: infra
+  environment: dev
+  accountId: "648278412233"
+  region: us-west-2
+
+# Application settings
+app:
+  name: main-api
+  version: v1
+  image:
+    repository: "{{ .Values.global.accountId }}.dkr.ecr.{{ .Values.global.region }}.amazonaws.com/{{ .Values.global.projectName }}/main-api"
+    tag: latest
+    pullPolicy: Always
+  port: 3000
+  replicas: 2
+
+# Namespace
+namespace:
+  create: true
+  name: main-api
+  labels:
+    name: main-api
+    environment: "{{ .Values.global.environment }}"
+
+# Service Account
+serviceAccount:
+  create: true
+  name: main-api-service-account
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::{{ .Values.global.accountId }}:role/{{ .Values.global.projectName }}-{{ .Values.global.environment }}-main-api-role"
+  automountServiceAccountToken: true
+
+# ConfigMap
+config:
+  NODE_ENV: production
+  PORT: "3000"
+  AUXILIARY_SERVICE_URL: "http://auxiliary-service.auxiliary-service.svc.cluster.local:3001"
+  SERVICE_VERSION: "1.0.0"
+  PROJECT_NAME: "{{ .Values.global.projectName }}"
+  ENVIRONMENT: "{{ .Values.global.environment }}"
+
+# Service
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: http
+
+# Ingress
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/redirect-to-https: "true"
+    alb.ingress.kubernetes.io/healthcheck-path: "/api/health"
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:648278412233:certificate/74159255-dd8e-4812-ae3e-c337f92143fb
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
+  hosts:
+    - host: kantox.api.einsteiniumeinsteinian.cloud
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Resources
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+# Health checks
+healthCheck:
+  liveness:
+    path: /api/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /api/health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Security
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# HPA
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# PDB
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# VPA
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minAllowed:
+    cpu: 100m
+    memory: 128Mi
+  maxAllowed:
+    cpu: 1
+    memory: 1Gi
+
+# Resource Quota
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "20"
+    persistentvolumeclaims: "4"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+# Limit Range
+limitRange:
+  enabled: true
+  default:
+    cpu: "200m"
+    memory: "256Mi"
+  defaultRequest:
+    cpu: "100m"
+    memory: "128Mi"
+  max:
+    cpu: "1"
+    memory: "1Gi"
+  min:
+    cpu: "50m"
+    memory: "64Mi"
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# RBAC
+rbac:
+  create: true

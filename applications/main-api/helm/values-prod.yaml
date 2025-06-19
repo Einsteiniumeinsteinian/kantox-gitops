@@ -1,0 +1,35 @@
+# =============================================================================
+# main-api-helm/values-prod.yaml
+# =============================================================================
+global:
+  environment: prod
+
+app:
+  replicas: 3
+
+ingress:
+  hosts:
+    - host: api.microservices.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+hpa:
+  minReplicas: 3
+  maxReplicas: 15
+
+resourceQuota:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "30"

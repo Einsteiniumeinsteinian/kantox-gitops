@@ -1,0 +1,19 @@
+# =============================================================================
+# main-api-helm/values-dev.yaml
+# =============================================================================
+global:
+  environment: staging
+
+app:
+  replicas: 2
+
+ingress:
+  hosts:
+    - host: kantox.api.einsteiniumeinsteinian.cloud
+      paths:
+        - path: /
+          pathType: Prefix
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 5

@@ -1,0 +1,85 @@
+# =============================================================================
+# main-api-helm/templates/deployment.yaml
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    version: {{ .Values.app.version }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+        version: {{ .Values.app.version }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.app.port | quote }}
+        prometheus.io/path: {{ .Values.serviceMonitor.path | quote }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      containers:
+      - name: {{ .Values.app.name }}
+        image: {{ tpl .Values.app.image.repository . }}:{{ .Values.app.image.tag }}
+        imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.app.port }}
+          name: http
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.app.name }}-config
+        env:
+        - name: SERVICE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.app.name }}-config
+              key: SERVICE_VERSION
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.liveness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.readiness.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.healthCheck.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.readiness.failureThreshold }}
+        securityContext:
+          allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
+          readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+          capabilities:
+            drop:
+            {{- range .Values.securityContext.capabilities.drop }}
+            - {{ . }}
+            {{- end }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}

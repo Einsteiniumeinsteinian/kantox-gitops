@@ -1,0 +1,25 @@
+# =============================================================================
+# auxiliary-service-helm/templates/limitrange.yaml
+# =============================================================================
+{{- if .Values.limitRange.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ .Values.app.name }}-limits
+  namespace: {{ .Values.namespace.name }}
+spec:
+  limits:
+  - default:
+      cpu: {{ .Values.limitRange.default.cpu | quote }}
+      memory: {{ .Values.limitRange.default.memory | quote }}
+    defaultRequest:
+      cpu: {{ .Values.limitRange.defaultRequest.cpu | quote }}
+      memory: {{ .Values.limitRange.defaultRequest.memory | quote }}
+    max:
+      cpu: {{ .Values.limitRange.max.cpu | quote }}
+      memory: {{ .Values.limitRange.max.memory | quote }}
+    min:
+      cpu: {{ .Values.limitRange.min.cpu | quote }}
+      memory: {{ .Values.limitRange.min.memory | quote }}
+    type: Container
+{{- end }}
