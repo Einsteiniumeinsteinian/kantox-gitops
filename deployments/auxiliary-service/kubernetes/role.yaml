@@ -1,0 +1,28 @@
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: auxiliary-service
+  name: auxiliary-service-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: auxiliary-service-rolebinding
+  namespace: auxiliary-service
+subjects:
+- kind: ServiceAccount
+  name: auxiliary-service-account
+  namespace: auxiliary-service
+roleRef:
+  kind: Role
+  name: auxiliary-service-role
+  apiGroup: rbac.authorization.k8s.io
