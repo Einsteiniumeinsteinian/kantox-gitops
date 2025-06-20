@@ -18,9 +18,9 @@ spec:
       - values-staging.yaml
       parameters:
       - name: app.image.tag
-        value: "latest"
+        value: "main-v8"
       - name: config.serviceVersion
-        value: "v7"
+        value: "v8"
   destination:
     server: https://kubernetes.default.svc
     namespace: main-api
