@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/Einsteiniumeinsteinian/kantox-gitops
     targetRevision: HEAD
-    path: ../helm/auxiliary-service
+    path: deployments/auxiliary-service/helm
     helm:
       valueFiles:
       - values.yaml
