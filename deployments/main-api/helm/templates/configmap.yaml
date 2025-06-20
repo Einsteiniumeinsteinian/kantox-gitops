@@ -19,5 +19,4 @@ data:
   
   # Dynamic values using templates
   NODE_ENV: {{ .Values.global.environment | quote }}
-  PROJECT_NAME: {{ .Values.global.projectName | quote }}
   ENVIRONMENT: {{ .Values.global.environment | quote }}

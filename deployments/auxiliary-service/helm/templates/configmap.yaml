@@ -16,6 +16,6 @@ data:
   SERVICE_VERSION: {{ .Values.config.serviceVersion | quote }}
   
   NODE_ENV: {{ .Values.global.environment | quote }}
-  PROJECT_NAME: {{ .Values.global.projectName | quote }}
+  PROJECT_NAME: {{ .Values.global.projectName | quote }}/{{ .Values.global.environment | quote }}
   ENVIRONMENT: {{ .Values.global.environment | quote }}
   AWS_REGION: {{ .Values.global.region | quote }}
