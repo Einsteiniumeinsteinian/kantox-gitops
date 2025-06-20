@@ -20,7 +20,7 @@ spec:
       - name: app.image.tag
         value: "latest"
       - name: config.serviceVersion
-        value: ""
+        value: "v7"
   destination:
     server: https://kubernetes.default.svc
     namespace: main-api
