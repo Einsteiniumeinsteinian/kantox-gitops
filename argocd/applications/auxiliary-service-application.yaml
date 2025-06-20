@@ -18,9 +18,9 @@ spec:
       - values-staging.yaml  # Environment-specific values
       parameters:
       - name: app.image.tag
-        value: "main-v2"  # This will be updated by CI/CD
+        value: "main-v3"  # This will be updated by CI/CD
       - name: config.serviceVersion
-        value: "v2"  # This will be updated by CI/CD
+        value: "v3"  # This will be updated by CI/CD
   destination:
     server: https://kubernetes.default.svc
     namespace: auxiliary-service
