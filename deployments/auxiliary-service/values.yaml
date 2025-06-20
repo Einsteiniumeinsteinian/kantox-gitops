@@ -1,0 +1,155 @@
+# =============================================================================
+# auxiliary-service/values.yaml (Clean - No Templates)
+# =============================================================================
+# Global settings
+global:
+  projectName: infra
+  environment: dev
+  accountId: "648278412233"
+  region: us-west-2
+
+# Application settings
+app:
+  name: auxiliary-service
+  version: v1
+  image:
+    # Template will be: {{ .Values.global.accountId }}.dkr.ecr.{{ .Values.global.region }}.amazonaws.com/{{ .Values.global.projectName }}/auxiliary-service
+    tag: latest
+    pullPolicy: Always
+  port: 3001
+  replicas: 2
+
+# Namespace
+namespace:
+  create: true
+  name: auxiliary-service
+  labels:
+    name: auxiliary-service
+    # environment will be templated in namespace.yaml
+
+# Service Account
+serviceAccount:
+  create: true
+  name: auxiliary-service-account
+  # Role ARN will be templated in serviceaccount.yaml
+  automountServiceAccountToken: true
+
+# ConfigMap (values only, templates will be in configmap.yaml)
+config:
+  port: "3001"
+  serviceVersion: "1.0.0"
+  # These will be templated: nodeEnv, projectName, environment
+  # AWS region and credentials will be from IRSA
+
+# Service
+service:
+  type: ClusterIP
+  port: 3001
+  targetPort: http
+
+# No ingress for auxiliary service (internal only)
+ingress:
+  enabled: false
+
+# Resources
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+# Health checks
+healthCheck:
+  liveness:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Security
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# HPA
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# PDB
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# VPA
+vpa:
+  enabled: false
+  updateMode: "Auto"
+  minAllowed:
+    cpu: 100m
+    memory: 128Mi
+  maxAllowed:
+    cpu: 500m
+    memory: 512Mi
+
+# Resource Quota
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "2"
+    limits.memory: 4Gi
+    pods: "10"
+    persistentvolumeclaims: "2"
+    services: "3"
+    secrets: "5"
+    configmaps: "5"
+
+# Limit Range
+limitRange:
+  enabled: true
+  default:
+    cpu: "200m"
+    memory: "256Mi"
+  defaultRequest:
+    cpu: "100m"
+    memory: "128Mi"
+  max:
+    cpu: "500m"
+    memory: "512Mi"
+  min:
+    cpu: "50m"
+    memory: "64Mi"
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# RBAC
+rbac:
+  create: true
+
+# Service Monitor
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  path: /metrics

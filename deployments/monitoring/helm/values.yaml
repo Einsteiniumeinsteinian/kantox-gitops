@@ -1,0 +1,53 @@
+# Monitoring Stack Configuration - Generated Fri Jun 20 00:50:44 WAT 2025
+global:
+  rbac:
+    create: true
+
+grafana:
+  enabled: true
+  admin:
+    existingSecret: "grafana-admin-secret"
+    userKey: "admin-user"
+    passwordKey: "admin-password"
+  grafana.ini:
+    server:
+      domain: monitoring.einsteiniumeinsteinian.cloud
+      root_url: "https://monitoring.einsteiniumeinsteinian.cloud"
+  persistence:
+    enabled: true
+    storageClassName: gp2
+    size: 10Gi
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-kube-prometheus-prometheus:9090
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    retention: 30d
+    retentionSize: 10GB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+prometheusOperator:
+  enabled: true

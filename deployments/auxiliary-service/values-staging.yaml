@@ -1,0 +1,12 @@
+# =============================================================================
+# auxiliary-service-helm/values-dev.yaml
+# =============================================================================
+global:
+  environment: staging
+
+app:
+  replicas: 2
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 4

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: argocd-ingress
+description: ArgoCD Ingress and Configuration Helm Chart
+type: application
+version: 1.0.0
+appVersion: "2.8.0"
+keywords:
+  - argocd
+  - gitops
+  - ingress
+home: https://argoproj.github.io/argo-cd/
+sources:
+  - https://github.com/argoproj/argo-cd
+maintainers:
+  - name: Cloud Engineering Team

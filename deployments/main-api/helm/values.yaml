@@ -1,5 +1,5 @@
 # =============================================================================
-# main-api-helm/values.yaml (Default values)
+# main-api-helm/values.yaml (Clean - No Templates)
 # =============================================================================
 # Global settings
 global:
@@ -13,7 +13,7 @@ app:
   name: main-api
   version: v1
   image:
-    repository: "{{ .Values.global.accountId }}.dkr.ecr.{{ .Values.global.region }}.amazonaws.com/{{ .Values.global.projectName }}/main-api"
+    # Template will be: {{ .Values.global.accountId }}.dkr.ecr.{{ .Values.global.region }}.amazonaws.com/{{ .Values.global.projectName }}/main-api
     tag: latest
     pullPolicy: Always
   port: 3000
@@ -25,44 +25,40 @@ namespace:
   name: main-api
   labels:
     name: main-api
-    environment: "{{ .Values.global.environment }}"
+    # environment will be templated in namespace.yaml
 
 # Service Account
 serviceAccount:
   create: true
   name: main-api-service-account
-  annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::{{ .Values.global.accountId }}:role/{{ .Values.global.projectName }}-{{ .Values.global.environment }}-main-api-role"
+  # Role ARN will be templated in serviceaccount.yaml: arn:aws:iam::{{ .Values.global.accountId }}:role/{{ .Values.global.projectName }}-{{ .Values.global.environment }}-main-api-role
   automountServiceAccountToken: true
 
-# ConfigMap
+# ConfigMap (values only, templates will be in configmap.yaml)
 config:
-  NODE_ENV: production
-  PORT: "3000"
-  AUXILIARY_SERVICE_URL: "http://auxiliary-service.auxiliary-service.svc.cluster.local:3001"
-  SERVICE_VERSION: "1.0.0"
-  PROJECT_NAME: "{{ .Values.global.projectName }}"
-  ENVIRONMENT: "{{ .Values.global.environment }}"
+  port: "3000"
+  auxiliaryServiceUrl: "http://auxiliary-service.auxiliary-service.svc.cluster.local:3001"
+  serviceVersion: "1.0.0"
+  # These will be templated: nodeEnv, projectName, environment
 
 # Service
 service:
   type: ClusterIP
   port: 3000
-  targetPort: http
+  targetPort: "http"
 
 # Ingress
 ingress:
   enabled: true
   className: alb
   annotations:
-    kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/redirect-to-https: "true"
     alb.ingress.kubernetes.io/healthcheck-path: "/api/health"
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:648278412233:certificate/74159255-dd8e-4812-ae3e-c337f92143fb
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:648278412233:certificate/78b5f6af-2af6-4db7-ae2d-777d33d0493a
     alb.ingress.kubernetes.io/healthy-threshold-count: "2"
     alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
   hosts:
@@ -167,3 +163,9 @@ networkPolicy:
 # RBAC
 rbac:
   create: true
+
+# Service Monitor
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  path: /metrics

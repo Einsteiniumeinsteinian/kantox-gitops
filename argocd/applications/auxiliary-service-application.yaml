@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/microservices-k8s  # UPDATE THIS
+    repoURL: https://github.com/Einsteiniumeinsteinian/kantox-gitops
     targetRevision: HEAD
     path: ../helm/auxiliary-service
     helm:
@@ -17,9 +17,9 @@ spec:
       - values.yaml
       - values-staging.yaml  # Environment-specific values
       parameters:
-      - name: image.tag
+      - name: app.image.tag
         value: "latest"  # This will be updated by CI/CD
-      - name: app.serviceVersion
+      - name: config.serviceVersion
         value: "v1.0.0"  # This will be updated by CI/CD
   destination:
     server: https://kubernetes.default.svc

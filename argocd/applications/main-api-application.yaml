@@ -9,18 +9,18 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Einsteiniumeinsteinian/Kantox-main-api  # UPDATE THIS
+    repoURL: https://github.com/Einsteiniumeinsteinian/kantox-gitops
     targetRevision: HEAD
-    path: deployment/helm/main-api
+    path: deployments/main-api/helm
     helm:
       valueFiles:
       - values.yaml
-      - values-staging.yaml  # Environment-specific values
+      - values-staging.yaml
       parameters:
-      - name: image.tag
-        value: "v1.0.0"  # 🎯 CI/CD updates this with version tag only
-      - name: app.serviceVersion
-        value: "v1.0.0"  # 🎯 CI/CD updates this with same version
+      - name: app.image.tag
+        value: "latest"
+      - name: config.serviceVersion
+        value: "v1.0.0"
   destination:
     server: https://kubernetes.default.svc
     namespace: main-api

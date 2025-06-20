@@ -1,0 +1,28 @@
+# =============================================================================
+# auxiliary-service-helm/values-prod.yaml
+# =============================================================================
+global:
+  environment: prod
+
+app:
+  replicas: 3
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+hpa:
+  minReplicas: 3
+  maxReplicas: 12
+
+resourceQuota:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "24"

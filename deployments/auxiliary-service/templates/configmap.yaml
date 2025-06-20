@@ -1,0 +1,21 @@
+# =============================================================================
+# auxiliary-service/templates/configmap.yaml
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.app.name }}-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    app.kubernetes.io/name: {{ .Values.app.name }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: {{ .Values.app.version }}
+data:
+  PORT: {{ .Values.config.port | quote }}
+  SERVICE_VERSION: {{ .Values.config.serviceVersion | quote }}
+  
+  NODE_ENV: {{ .Values.global.environment | quote }}
+  PROJECT_NAME: {{ .Values.global.projectName | quote }}
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  AWS_REGION: {{ .Values.global.region | quote }}

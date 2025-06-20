@@ -1,0 +1,24 @@
+# =============================================================================
+# auxiliary-service-helm/templates/servicemonitor.yaml
+# =============================================================================
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.app.name }}-metrics
+  namespace: monitoring
+  labels:
+    app: {{ .Values.app.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Values.namespace.name }}
+  endpoints:
+  - port: http
+    path: {{ .Values.serviceMonitor.path }}
+    interval: {{ .Values.serviceMonitor.interval }}
+{{- end }}
+      

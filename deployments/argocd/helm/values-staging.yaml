@@ -1,0 +1,8 @@
+# Staging environment overrides
+environment: "staging"
+
+ingress:
+  host: "argocd-staging.local"
+  
+server:
+  insecure: false  # Use TLS in staging
